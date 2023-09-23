@@ -6,7 +6,7 @@ Put UnknownCommandSuggestions.dll under the release tab into %appdata%\EXILED\Pl
 
 ## Default configs
 ```yaml
-scpsinfodisplay:
+unknowncommandsuggestions:
   # Is the plugin enabled?
   is_enabled: true
   # Show debug messages in the server console?
