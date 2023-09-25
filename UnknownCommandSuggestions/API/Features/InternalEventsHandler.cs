@@ -35,8 +35,7 @@ namespace UnknownCommandSuggestions.API.Features
                 .OrderBy(c => LevenshteinDistance.Calculate(c.Name, input))
                 .Select(c => c.Command)
                 .Distinct()
-                .Take(5)
-                .ToList();
+                .Take(5);
 
             return string.Join("\n", suggestions.Select(c => $"{c.Command} {(c.Aliases != null && c.Aliases.Any() ? $"({string.Join("; ", c.Aliases)})" : "")}"));
         }

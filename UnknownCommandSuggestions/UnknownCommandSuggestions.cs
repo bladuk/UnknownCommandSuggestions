@@ -58,7 +58,7 @@ namespace UnknownCommandSuggestions
                     AllCommands.AddRange(command.Aliases.Select(alias => (alias, command)));
             }
             
-            foreach (var command in QueryProcessor.DotCommandHandler.AllCommands.ToList())
+            foreach (var command in QueryProcessor.DotCommandHandler.AllCommands)
             {
                 AllClientCommands.Add((command.Command, command));
                 
