@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using CommandSystem;
 using Exiled.API.Features;
 using RemoteAdmin;
 
@@ -11,34 +13,32 @@ namespace UnknownCommandSuggestions.API.Features
         {
             var args = query.Trim().Split(QueryProcessor.SpaceArray, 512, StringSplitOptions.RemoveEmptyEntries);
             
-            if (args[0].StartsWith("$")) return;
-            
-            if (!CommandProcessor.RemoteAdminCommandHandler.TryGetCommand(args[0], out _))
-            {
-                var suggestions = UnknownCommandSuggestions.Singleton.AllCommands
-                    .OrderBy(c => LevenshteinDistance.Calculate(c.Command, args[0])).ToList();
-                suggestions.RemoveRange(5, suggestions.Count - 5);
-                
-                sender.RaReply(UnknownCommandSuggestions.Singleton.Config.UnknownCommandReply + string.Join("\n", suggestions.Select(c => c.Command)), false, true, "");
-            }
+            if (args[0].StartsWith("$") || CommandProcessor.RemoteAdminCommandHandler.TryGetCommand(args[0], out _)) return;
+
+            sender.RaReply(UnknownCommandSuggestions.Singleton.Config.UnknownCommandReply + GetSuggestions(args[0], UnknownCommandSuggestions.Singleton.AllCommands), false, true, "");
         }
         
         internal static void HandleConsoleCommand(string query, CommandSender sender)
         {
             var args = query.Trim().Split(QueryProcessor.SpaceArray, 512, StringSplitOptions.RemoveEmptyEntries);
             
-            if (args[0].StartsWith("$")) return;
+            if (args[0].StartsWith("$") || QueryProcessor.DotCommandHandler.TryGetCommand(args[0], out _)) return;
 
             var playerSender = Player.Get(sender) ?? Server.Host;
             
-            if (!QueryProcessor.DotCommandHandler.TryGetCommand(args[0], out _))
-            {
-                var suggestions = UnknownCommandSuggestions.Singleton.AllClientCommands
-                    .OrderBy(c => LevenshteinDistance.Calculate(c.Command, args[0])).ToList();
-                suggestions.RemoveRange(5, suggestions.Count - 5);
-                
-                playerSender.SendConsoleMessage(UnknownCommandSuggestions.Singleton.Config.UnknownCommandReply + string.Join("\n", suggestions.Select(c => c.Command)), "red");
-            }
+            playerSender.SendConsoleMessage(UnknownCommandSuggestions.Singleton.Config.UnknownCommandReply + GetSuggestions(args[0], UnknownCommandSuggestions.Singleton.AllClientCommands), "red");
+        }
+
+        private static string GetSuggestions(string input, List<(string Name, ICommand Command)> dictionary)
+        {
+            var suggestions = dictionary
+                .OrderBy(c => LevenshteinDistance.Calculate(c.Name, input))
+                .Select(c => c.Command)
+                .Distinct()
+                .Take(5)
+                .ToList();
+
+            return string.Join("\n", suggestions.Select(c => $"{c.Command} {(c.Aliases != null && c.Aliases.Any() ? $"({string.Join("; ", c.Aliases)})" : "")}"));
         }
     }
 }

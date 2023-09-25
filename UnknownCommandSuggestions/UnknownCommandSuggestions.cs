@@ -9,17 +9,17 @@ using Server = Exiled.Events.Handlers.Server;
 
 namespace UnknownCommandSuggestions
 {
-    internal class UnknownCommandSuggestions : Plugin<Config>
+    internal sealed class UnknownCommandSuggestions : Plugin<Config>
     {
         public override string Prefix => "unknowncommandsuggestions";
         public override string Name => "UnknownCommandSuggestions";
         public override string Author => "bladuk.";
-        public override Version Version { get; } = new Version(1, 0, 0);
+        public override Version Version { get; } = new Version(1, 0, 1);
         public override Version RequiredExiledVersion { get; } = new Version(8, 2, 1);
         public static UnknownCommandSuggestions Singleton = new UnknownCommandSuggestions();
-
-        internal List<ICommand> AllCommands { get; private set; } = new List<ICommand>();
-        internal List<ICommand> AllClientCommands { get; private set; } = new List<ICommand>();
+        
+        internal List<(string Name, ICommand Command)> AllCommands { get; } = new List<(string Name, ICommand Command)>();
+        internal List<(string Name, ICommand Command)> AllClientCommands { get; } = new List<(string Name, ICommand Command)>();
         
         private Harmony _harmony;
 
@@ -47,8 +47,21 @@ namespace UnknownCommandSuggestions
 
         private void LoadAllCommands()
         {
-            AllCommands = CommandProcessor.GetAllCommands();
-            AllClientCommands = QueryProcessor.DotCommandHandler.AllCommands.ToList();
+            foreach (var command in CommandProcessor.GetAllCommands())
+            {
+                AllCommands.Add((command.Command, command));
+                
+                if (command.Aliases != null)
+                    AllCommands.AddRange(command.Aliases.Select(alias => (alias, command)));
+            }
+            
+            foreach (var command in QueryProcessor.DotCommandHandler.AllCommands.ToList())
+            {
+                AllClientCommands.Add((command.Command, command));
+                
+                if (command.Aliases != null)
+                    AllClientCommands.AddRange(command.Aliases.Select(alias => (alias, command)));
+            }
         }
     }
 }

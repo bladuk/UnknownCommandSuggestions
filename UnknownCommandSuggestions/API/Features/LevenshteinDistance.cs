@@ -2,7 +2,7 @@ using System;
 
 namespace UnknownCommandSuggestions.API.Features
 {
-    internal class LevenshteinDistance
+    internal sealed class LevenshteinDistance
     {
         internal static int Calculate(string source1, string source2)
         {
