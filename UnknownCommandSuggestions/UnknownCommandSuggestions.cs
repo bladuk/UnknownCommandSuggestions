@@ -47,6 +47,9 @@ namespace UnknownCommandSuggestions
 
         private void LoadAllCommands()
         {
+            AllCommands.Clear();
+            AllClientCommands.Clear();
+
             foreach (var command in CommandProcessor.GetAllCommands())
             {
                 AllCommands.Add((command.Command, command));
